@@ -1,0 +1,32 @@
+@APIService_HostAddress = https://localhost:7029
+
+GET {{APIService_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
+
+POST {{APIService_HostAddress}}/account/Login
+Content-Type: application/json
+
+{
+  //UserContext
+}
+
+###
+
+POST {{APIService_HostAddress}}/account/Register
+Content-Type: application/json
+
+{
+  //UserContext
+}
+
+###
+
+GET {{APIService_HostAddress}}/account/ResetApiKey
+
+###
+
+GET {{APIService_HostAddress}}/account/GetApiKey
+
+###
