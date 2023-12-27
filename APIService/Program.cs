@@ -1,3 +1,4 @@
+using APIService;
 using APIService.Model;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
@@ -17,6 +18,8 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 	option.ExpireTimeSpan = TimeSpan.FromMinutes(1);
 	option.SlidingExpiration = true;
 });
+builder.Services.AddScoped<ApiKeyAuthFilter>();
+builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
