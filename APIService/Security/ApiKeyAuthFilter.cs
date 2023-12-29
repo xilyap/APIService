@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 
-namespace APIService
+namespace APIService.Security
 {
 	public class ApiKeyAuthFilter : IAuthorizationFilter
 	{

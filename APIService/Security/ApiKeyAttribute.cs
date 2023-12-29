@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace APIService
+namespace APIService.Security
 {
 	public class ApiKeyAttribute : ServiceFilterAttribute
 	{

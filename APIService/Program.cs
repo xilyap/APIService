@@ -1,5 +1,7 @@
-using APIService;
 using APIService.Model;
+using APIService.Security;
+using APIService.Services;
+using APIService.Services.Abstract;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using System.Text;
@@ -19,6 +21,8 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 	option.SlidingExpiration = true;
 });
 builder.Services.AddScoped<ApiKeyAuthFilter>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IApiKeyService, AuthService>();
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddControllers();

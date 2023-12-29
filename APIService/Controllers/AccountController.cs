@@ -1,4 +1,5 @@
 ﻿using APIService.Model;
+using APIService.Services.Abstract;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
@@ -15,29 +16,24 @@ namespace APIService.Controllers
 	[ApiController]
 	public class AccountController : ControllerBase
 	{
-		[HttpPost]
-		public async Task<IActionResult> Register(UserContext db)
+		private IAuthService _authService;
+		private IApiKeyService _apiService;
+
+		public AccountController(IAuthService authService, IApiKeyService apiService)
 		{
-			var form = HttpContext.Request.Form;
-			if (!form.ContainsKey("login") && !form.ContainsKey("password"))
+			_authService = authService;
+			_apiService = apiService;
+		}
+
+		[HttpPost]
+		public async Task<IActionResult> Register([FromForm] string login, [FromForm] string password)
+		{
+			if (_authService.Register(login, password))
 			{
-				return BadRequest();
+				return Ok(new { Status = "Error", Message = "Пользователь уже существует!" });
 			}
-
-			string login = form["login"];
-			string password = form["password"];
-
-			User? user = db.Users.FirstOrDefault(u => u.Login == login && u.Password == password);
-			if (user != null)
-			{
-				return Ok(new { Status = "Error", Message = "Пользователь уже зарегистрирован!" });
-			}
-
-			db.Users.Add(new User { Login = login, Password = password });
-			db.SaveChanges();
 
 			var claims = new List<Claim> { new Claim(ClaimTypes.Name, login) };
-
 			ClaimsIdentity identity = new ClaimsIdentity(claims, "Cookies");
 
 			await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(identity));
@@ -74,21 +70,11 @@ namespace APIService.Controllers
 		}
 
 		[HttpPost]
-		public async Task<IActionResult> Login(UserContext db)
+		public async Task<IActionResult> Login([FromForm] string login, [FromForm] string password)
 		{
-			var form = HttpContext.Request.Form;
-			if (!form.ContainsKey("login") && !form.ContainsKey("password"))
+			if (_authService.Login(login, password))
 			{
-				return BadRequest("Логин или пароль не установлены");
-			}
-
-			string login = form["login"];
-			string password = form["password"];
-
-			User? user = db.Users.FirstOrDefault(u => u.Login == login && u.Password == password);
-			if (user == null)
-			{
-				return Unauthorized();
+				return Ok(new { Status = "Error", Message = "Пользователь уже существует!" });
 			}
 
 			var claims = new List<Claim> { new Claim(ClaimTypes.Name, login) };
@@ -101,10 +87,10 @@ namespace APIService.Controllers
 
 		[HttpGet]
 		[Authorize]
-		public IActionResult GetApiKey(UserContext db)
+		public IActionResult GetApiKey()
 		{
 			string user = HttpContext.User.Identity.Name;
-			string? API_KEY = db.Users.FirstOrDefault(u => u.Login == user).API_KEY;
+			string? API_KEY = _apiService.GetApiKey(user);
 			if (API_KEY == null)
 			{
 				return NotFound();
@@ -114,21 +100,11 @@ namespace APIService.Controllers
 
 		[HttpGet]
 		[Authorize]
-		public string ResetApiKey(UserContext db)
+		public string ResetApiKey()
 		{
 			string user = HttpContext.User.Identity.Name;
-			string newApiKey = GenerateApiKey(32);
-			db.Users.First(u => u.Login == user).API_KEY = newApiKey;
-			db.SaveChangesAsync();
+			string newApiKey = _apiService.ResetApiKey(user);
 			return newApiKey;
-		}
-
-		private string GenerateApiKey(int length)
-		{
-			const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-			string result = new string(Enumerable.Repeat(chars, length)
-		.Select(s => s[RandomNumberGenerator.GetInt32(s.Length)]).ToArray());
-			return result;
 		}
 	}
 }
