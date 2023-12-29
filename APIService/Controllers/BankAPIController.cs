@@ -16,7 +16,7 @@ namespace APIService.Controllers
 	public class BankAPIController : ControllerBase
 	{
 		[HttpGet("/api/quotation/{time}")]
-		public async Task<IResult> Get(string time, IHttpClientFactory httpClientFactory)
+		public async Task<IActionResult> Get(string time, IHttpClientFactory httpClientFactory)
 		{
 			if (DateTime.TryParseExact(time, "dd-MM-yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime result))
 			{
@@ -30,10 +30,11 @@ namespace APIService.Controllers
 					var xml = new XmlDocument();
 					xml.LoadXml(content);
 					var jsonContent = JsonConvert.SerializeXmlNode(xml, Newtonsoft.Json.Formatting.Indented);
-					return Results.Text(jsonContent, "application/json");
+					return new JsonResult(jsonContent);
 				}
+
 			}
-			return Results.StatusCode(422);
+			return BadRequest();
 		}
 	}
 }
